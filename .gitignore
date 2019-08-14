@@ -52,5 +52,5 @@ Mkfile.old
 dkms.conf
 
 # the kernel and the file for building the module
-kernel/
+kernel/*/
 Test/
