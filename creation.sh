@@ -12,6 +12,6 @@ make -C $KERNELDIR M=$(pwd)
 cd $CURR_DIRECTORY
 mkdir Test
 cp $MODULE_REL_PATH/*.ko Test/
-find FS | cpio -o -H newc | gzip > mod.gz
+find Test | cpio -o -H newc | gzip > mod.gz
 cat tinyfs.gz mod.gz > test.gz
 qemu-system-x86_64 -kernel "$KERNELDIR/arch/x86_64/boot/bzImage" -initrd test.gz
