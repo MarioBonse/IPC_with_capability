@@ -1,0 +1,33 @@
+Requirement: 
+IPC synchronous reading, asynchronous writing:    
+        blocking reading (if there is not somenthing I block my self)
+        blocking on a que if someone has written and no one has read
+Capability that identify the comunication channel (random 64 bit ID)
+
+GORE
+Goal Oriented Requirement Engineering
+Describe what we are going to do:
+1) create_capability() -> I want to create a capability.
+    1.0) I need to create an random unique 64 bit ID 
+    1.1) Create a MISC device related to this capability where I can write and read
+        1.1.1) I need a file
+        1.1.2) A mutex
+        1.1.3) A waitque maybe
+    1.2) Somenthing for managing the capability
+        1.2.1) A list 
+    
+2) write_capability() -> function that allows to write throuth a capability.
+    2.0) check if the cabality exists -> search on the list
+    2.1) If exists then I can write:
+        2.1.1) check no one else is using the capability -> mutex
+        2.1.2) Chech if there is not somenthing already written in the file -> bit for it 
+        2.1.3) If there is not somenthing already written I can write
+        2.1.4) Update the data structure for the capability and then leave
+
+3) read_capability() -> function that read on a capability
+    3.0) check if the capality exists
+    3.1) If exists then I can read:
+        3.1.1) check no one else is using the capability -> mutex
+        3.1.2) Chech if there is not somenthing already written in the file -> bit for it 
+        3.1.3) If there is somenthing weitten I read and leave -> (set the bit leave the mutex...)
+        3.1.4) Else I wait -> block me in a waitque probably
