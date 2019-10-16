@@ -1,25 +1,36 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
-#include <linux/ioctl.h>
+#include <linux/fs.h>
+//#include <linux/ioctl.h>
 #include <linux/printk.h>
 
+#include "../ioctl.h"
+
 MODULE_LICENSE("GPL");
+
+static int Major;
 
 static bool cannot_insert;
 module_param(cannot_insert, bool, 0);
 
-#define NEW_CAPABILITY        	_IO(WATCHDOG_IOCTL_BASE, 0)
-#define WRITE_CAPABILITY        _IOW(WATCHDOG_IOCTL_BASE, 1, int)
-#define READ_CAPABILITY     	_IOR(WATCHDOG_IOCTL_BASE, 2, int)
-#define DEL_CAPABILITY          _IO(WATCHDOG_IOCTL_BASE, 3)
+static int my_open(struct inode *inode, struct file *filp)
+{
+ printk(KERN_INFO "Inside open \n");
+ return 0;
+}
+
+static int my_close(struct inode *inode, struct file *filp) {
+ printk (KERN_INFO "Inside close \n");
+ return 0;
+}
 
 static int my_ioctl(struct inode *inode, struct file *filp, unsigned int ioctl_num, unsigned long ioctl_param)
 {
 	switch(ioctl_num)
 	{
 		case NEW_CAPABILITY:
-		printk("new_capability \n");
+		printk("new_capability sku sku\n");
 		
 		case WRITE_CAPABILITY:
 		printk("write_capability \n");
@@ -30,15 +41,16 @@ static int my_ioctl(struct inode *inode, struct file *filp, unsigned int ioctl_n
 		case DEL_CAPABILITY:
 		printk("delete_capability \n");
 	}
+	return 0;
 }
 
 static struct file_operations my_fops = {
-  .owner =        THIS_MODULE,
+  .owner =        	THIS_MODULE,
   .unlocked_ioctl =	my_ioctl,
+  .open =         	my_open,
+  .release =      	my_close,
 #if 0
   .read =         my_read,
-  .open =         my_open,
-  .release =      my_close,
   .write =        my_write,
   .poll =         my_poll,
   .fasync =       my_fasync,
