@@ -1,4 +1,3 @@
-#include <linux/poll.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <linux/init.h>
@@ -29,7 +28,7 @@ static int my_close(struct inode *inode, struct file *filp) {
  return 0;
 }
 
-static int my_ioctl(struct inode *inode, struct file *filp, unsigned int ioctl_num, unsigned long ioctl_param)
+int my_ioctl(struct inode *inode, struct file *filp, unsigned int ioctl_num, unsigned long ioctl_param)
 {
 	switch(ioctl_num)
 	{
@@ -49,10 +48,10 @@ static int my_ioctl(struct inode *inode, struct file *filp, unsigned int ioctl_n
 }
 
 static struct file_operations my_fops = {
-  .owner =        	THIS_MODULE,
-  .unlocked_ioctl =	my_ioctl,
-  .open =         	my_open,
-  .release =      	my_close,
+  owner: THIS_MODULE,
+  open : my_open,
+  ioctl:	my_ioctl,
+  release: my_close,
 #if 0
   .read =         my_read,
   .write =        my_write,
@@ -90,128 +89,126 @@ static void testmodule_exit(void)
 !!!
 Managing capability: function that write, read, create, delete a capability
 !!!
- */
-struct capability_elem{
-    int capability_ID;
-    char *message;
-    struct mutex my_mutex;
-    size_t len;
-    struct list_head kl;
-};
-/* function that create a new capability.
-It creates an element capability_elem, init it and add it in the queue */
-int new_capability()
-{
-    struct capability_elem  *new_elem;
-    new_elem = kmalloc(sizeof(struct capability_elem), GFP_KERNEL);
-    new_elem->capability_ID = get_random_int();
-    new_elem->len = 0;
-    // init the mutex
-    mutex_init(&(new_elem->my_mutex));
-    // ad to the list of capability
-    list_add(&(new_elem->kl), &head);
-}
+*/
+// struct capability_elem{
+//     int capability_ID;
+//     char *message;
+//     struct mutex my_mutex;
+//     size_t len;
+//     struct list_head kl;
+// };
+// /* function that create a new capability.
+// It creates an element capability_elem, init it and add it in the queue */
+// int new_capability(void)
+// {
+//     struct capability_elem  *new_elem;
+//     new_elem = kmalloc(sizeof(struct capability_elem), GFP_KERNEL);
+//     new_elem->capability_ID = get_random_int();
+//     new_elem->len = 0;
+//     // init the mutex
+//     mutex_init(&(new_elem->my_mutex));
+//     // ad to the list of capability
+//     list_add(&(new_elem->kl), &head);
+// }
 
-/*
-Function that check if, given a capability ID it exists.
-It search in the list of capbaility if exists return the corrispondent element in the list
- */
-struct capability_elem *check_capability(int capability_ID)
-{
-    struct list_head *l, *tmp;
-    struct capability_elem *n;
-    printk("Searching capability:\n");
+// /*
+// Function that check if, given a capability ID it exists.
+// It search in the list of capbaility if exists return the corrispondent element in the list
+//  */
+// struct capability_elem *check_capability(int capability_ID)
+// {
+//     struct list_head *l, *tmp;
+//     struct capability_elem *n;
+//     printk("Searching capability:\n");
 
-    list_for_each_safe(l, tmp, &head) {
-        n = list_entry(l, struct node, kl);
-        if (n->capability_ID == capability_ID){
-            printk("this capability exists!\n");
-            return n;
-        }
-    }
-    printk("this capability does not exists!\n");
-    return NULL
-}
+//     list_for_each_safe(l, tmp, &head) {
+//         n = list_entry(l, struct node, kl);
+//         if (n->capability_ID == capability_ID){
+//             printk("this capability exists!\n");
+//             return n;
+//         }
+//     }
+//     printk("this capability does not exists!\n");
+//     return NULL
+// }
 
-ssize_t read_capability(int capability_ID, char __user *buf, size_t len)
-{
-    printk("So long, and thanks for all the fish!!! Your friendly test module is going to be removed from the kernel\n");
+// ssize_t read_capability(int capability_ID, char __user *buf, size_t len)
+// {
+//     printk("So long, and thanks for all the fish!!! Your friendly test module is going to be removed from the kernel\n");
 
-    misc_deregister(%test_device);
-    int res, err;
-    struct capability_elem *my_capability;
-    my_capability = check_capability(capability_ID);
-    if (my_capability == NULL)
-    {
-        printk("ERROR: this capability does not exists");
-        return 0;
-    }else{
-        // we can read from the capability
-        mutex_lock(&my_capability->my_mutex);
-        if (len > my_capability->len) {
-          res = my_capability->len;
-        } else {
-          res = len;
-        }
-        if (my_capability->message == NULL) {
-        mutex_unlock(&my_capability->my_mutex);
-        return 0;
-        }
-      err = copy_to_user(buf, my_capability->message, res);
-      if (err) {
-      return -EFAULT;
-      }
+//     misc_deregister(%test_device);
+//     int res, err;
+//     struct capability_elem *my_capability;
+//     my_capability = check_capability(capability_ID);
+//     if (my_capability == NULL)
+//     {
+//         printk("ERROR: this capability does not exists");
+//         return 0;
+//     }else{
+//         // we can read from the capability
+//         mutex_lock(&my_capability->my_mutex);
+//         if (len > my_capability->len) {
+//           res = my_capability->len;
+//         } else {
+//           res = len;
+//         }
+//         if (my_capability->message == NULL) {
+//         mutex_unlock(&my_capability->my_mutex);
+//         return 0;
+//         }
+//       err = copy_to_user(buf, my_capability->message, res);
+//       if (err) {
+//       return -EFAULT;
+//       }
 
-      kfree(my_capability->message);
-      my_capability->message = NULL;
-      mutex_unlock(&my_capability->my_mutex);
+//       kfree(my_capability->message);
+//       my_capability->message = NULL;
+//       mutex_unlock(&my_capability->my_mutex);
 
-      return res;
-      }
-}
+//       return res;
+// }
 
-size_t write_capability(int capability_ID, char __user *buf, size_t len)
-{
-    struct capability_elem *my_capability;
-    my_capability = check_capability(capability_ID);
-    if (my_capability == NULL)
-    {
-        printk("ERROR: this capability does not exists");
-        return 0;
-    }else{
-         // we can write into the capability
-            int err;
-            size_t count;
-            count = len;
+// size_t write_capability(int capability_ID, char __user *buf, size_t len)
+// {
+//     struct capability_elem *my_capability;
+//     my_capability = check_capability(capability_ID);
+//     if (my_capability == NULL)
+//     {
+//         printk("ERROR: this capability does not exists");
+//         return 0;
+//     }else{
+//          // we can write into the capability
+//             int err;
+//             size_t count;
+//             count = len;
 
-            mutex_lock(&my_capability->my_mutex);
-            if (my_capability->message) {
-              // there is somenthing writtne on the capability. 
-              // now it's not blocking
-              printk("Error someone has already written");
-              count = -1;
-              goto exit;
-            }
-            my_capability->message = kmalloc(count, GFP_USER);
-            if (my_capability->message == NULL) {
-              printk("Error during memory allocation");
-              count = -1;
-              goto exit;
-            }
+//             mutex_lock(&my_capability->my_mutex);
+//             if (my_capability->message) {
+//               // there is somenthing writtne on the capability. 
+//               // now it's not blocking
+//               printk("Error someone has already written");
+//               count = -1;
+//               goto exit;
+//             }
+//             my_capability->message = kmalloc(count, GFP_USER);
+//             if (my_capability->message == NULL) {
+//               printk("Error during memory allocation");
+//               count = -1;
+//               goto exit;
+//             }
 
-            err = copy_from_user(my_capability->message, buf, count);
-            if (err) {
-              printk("Error during copy");
-              count = -EFAULT;
-              goto exit;
-            }
-            exit:
-            mutex_unlock(&my_capability->my_mutex);
+//             err = copy_from_user(my_capability->message, buf, count);
+//             if (err) {
+//               printk("Error during copy");
+//               count = -EFAULT;
+//               goto exit;
+//             }
+//             exit:
+//             mutex_unlock(&my_capability->my_mutex);
 
-            return count;
-            }
-}
-
+//             return count;
+//             }
+// }
 
 
 
