@@ -1,23 +1,37 @@
 #include <fcntl.h>      /* open */ 
 #include <unistd.h>     /* exit */
 #include <sys/ioctl.h>  /* ioctl */
+#include "ioctl.h"
 
-
-#DEFINE DEVICE_FILE_NAME "test_mod"  /* oppure ci va "test", che è il nome del miscdevice? */
+#define DEVICE_FILE_NAME "capability_module"  /* oppure ci va "test", che è il nome del miscdevice? */
 
 
 /* Functions for the ioctl calls */
 
 ioctl_new_capability(int file_desc)
 {
-  ioctl(file_desc, NEW_CAPABILITY);
+  int capability;
+  capability = ioctl(file_desc, NEW_CAPABILITY, NULL);
 
-  if (ret_val < 0) {
-    printf ("ioctl_set_msg failed:%d\n", ret_val);
+  if (capability < 0) {
+    printf ("ioctl_set_msg failed:%d\n", capability);
     exit(-1);
   }
 }
 
+ioctl_send_capability(int file_desc, int capability, char*buff)
+{
+  int len;
+  struct ioctl_message messagge;
+  messagge.capability = capability;
+  messagge.buff = buff;
+  len = ioctl(file_desc, WRITE_CAPABILITY, messagge);
+  // copy messagge.buff in messagge
+  if (capability < 0) {
+    printf ("ioctl_set_msg failed:%d\n", len);
+    exit(-1);
+  }
+}
 
 /* Main - Call the ioctl functions */
 main()

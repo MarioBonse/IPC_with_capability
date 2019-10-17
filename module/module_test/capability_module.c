@@ -8,24 +8,16 @@
 #include <linux/fs.h>
 //#include <linux/ioctl.h>
 #include <linux/printk.h>
-
-#include "../ioctl.h"
-
 #include <linux/random.h>
 #include <linux/list.h>
-
+#include "ioctl.h"
 
 MODULE_AUTHOR("Mario Bonsembiante");
-MODULE_DESCRIPTION("Test for ioctl");
+MODULE_DESCRIPTION("IPC with capability");
 MODULE_LICENSE("GPL");
 
-static int Major;
-
-static bool cannot_insert;
-module_param(cannot_insert, bool, 0);
 static struct list_head head;
 
-struct capability_elem
 static int my_open(struct inode *inode, struct file *filp)
 {
  printk(KERN_INFO "Inside open \n");
@@ -71,23 +63,43 @@ static struct file_operations my_fops = {
 
 
 static struct miscdevice test_device = {
-  MISC_DYNAMIC_MINOR, "test", &my_fops
+  MISC_DYNAMIC_MINOR, "capability_module", &my_fops
 };
 
-static int __init test_module_init(void)
+
+static int testmodule_init(void)
 {
+  int res;
+
+  res = misc_register(&test_device);
+
+  printk("Misc Register returned %d\n", res);
+
+  return 0;
+}
+
+static void testmodule_exit(void)
+{
+  misc_deregister(&test_device);
+}
+
+
+
+
+/*
+!!!
+Managing capability: function that write, read, create, delete a capability
+!!!
+ */
+struct capability_elem{
     int capability_ID;
     char *message;
     struct mutex my_mutex;
     size_t len;
     struct list_head kl;
 };
-
-    int res;
-    res = misc_register(&test_device);
-
-    if (cannot_insert) {
-        return -1;
+/* function that create a new capability.
+It creates an element capability_elem, init it and add it in the queue */
 int new_capability()
 {
     struct capability_elem  *new_elem;
@@ -95,7 +107,7 @@ int new_capability()
     new_elem->capability_ID = get_random_int();
     new_elem->len = 0;
     // init the mutex
-
+    mutex_init(&(new_elem->my_mutex));
     // ad to the list of capability
     list_add(&(new_elem->kl), &head);
 }
@@ -201,69 +213,8 @@ size_t write_capability(int capability_ID, char __user *buf, size_t len)
 }
 
 
-static int my_open(struct inode *inode, struct file *file)
-{
-  return 0;
-}
-
-static int my_close(struct inode *inode, struct file *file)
-{
-  return 0;
-}
-
-int my_ioctl(    struct inode *inode,
-    struct file *file,
-    unsigned int ioctl_num,/* The number of the ioctl */
-    unsigned long ioctl_param) /* The parameter to it */
-{
-    
-    switch(ioctl_num)
-    {
-        case NEW_CAPABILITY:
-        // do stuff
-        case WRITE_CAPABILITY:
-        //write
-        case READ_CAPABILITY:
-        // read
-        case DEL_CAPABILITY:
-        //delete the capability
-    }
-}
-
-static struct file_operations my_fops = {
-  .owner =        THIS_MODULE,
-  .read =         my_read,
-  .open =         my_open,
-  .release =      my_close,
-  .write =        my_write,
-#if 0
-  .poll =         my_poll,
-  .fasync =       my_fasync,
-#endif
-};
-
-static struct miscdevice test_device = {
-  MISC_DYNAMIC_MINOR, "test", &my_fops
-};
 
 
-static int testmodule_init(void)
-{
-  int res;
-
-  res = misc_register(&test_device);
-
-  printk("Misc Register returned %d\n", res);
-
-  mutex_init(&my_mutex);
-
-  return 0;
-}
-
-static void testmodule_exit(void)
-{
-  misc_deregister(&test_device);
-}
 
 module_init(testmodule_init);
 module_exit(testmodule_exit);

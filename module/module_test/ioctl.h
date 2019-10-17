@@ -10,5 +10,9 @@
 #define READ_CAPABILITY     	_IOR(MY_IOC_MAGIC_NUMBER, 2, int)
 #define DEL_CAPABILITY          _IO(MY_IOC_MAGIC_NUMBER, 3, null)
 
+struct ioctl_message{
+    int capability;
+    char *buff;
+};
 #endif
 
