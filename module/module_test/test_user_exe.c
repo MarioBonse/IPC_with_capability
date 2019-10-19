@@ -3,7 +3,7 @@
 #include <sys/ioctl.h>  /* ioctl */
 #include "ioctl.h"
 
-#define DEVICE_FILE_NAME "capability_module"  /* oppure ci va "test", che è il nome del miscdevice? */
+#define DEVICE_NAME "dev/capability_module"  /* "capability_module" è il nome che viene assegnato al misc device quando viene registrato */
 
 
 /* Functions for the ioctl calls */
@@ -38,11 +38,11 @@ main()
 {
   int file_desc;
 
-  file_desc = open(DEVICE_FILE_NAME, 0);
+  file_desc = open(DEVICE_NAME, 0_RDWR);
 
   if (file_desc < 0) {
     printf ("Can't open device file: %s\n", 
-            DEVICE_FILE_NAME);
+            DEVICE_NAME);
     exit(-1);
   }
 

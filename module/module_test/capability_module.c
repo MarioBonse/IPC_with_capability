@@ -5,11 +5,14 @@
 #include <linux/mutex.h>
 #include <linux/slab.h>
 #include <linux/fs.h>
-//#include <linux/ioctl.h>
+//#include <linux/ioctl.h> 	it gets included by the header "ioctl.h"
 #include <linux/printk.h>
 #include <linux/random.h>
 #include <linux/list.h>
+
 #include "ioctl.h"
+
+#define DEVICE_NAME "capability_module" //name that will be assigned to misc_device when registering it
 
 MODULE_AUTHOR("Mario Bonsembiante");
 MODULE_DESCRIPTION("IPC with capability");
@@ -62,14 +65,13 @@ static struct file_operations my_fops = {
 
 
 static struct miscdevice test_device = {
-  MISC_DYNAMIC_MINOR, "capability_module", &my_fops
+  MISC_DYNAMIC_MINOR, DEVICE_NAME, &my_fops
 };
 
 
 static int testmodule_init(void)
 {
   int res;
-
   res = misc_register(&test_device);
 
   printk("Misc Register returned %d\n", res);
