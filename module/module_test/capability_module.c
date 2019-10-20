@@ -68,7 +68,7 @@ static struct miscdevice test_device = {
 	.minor	= MISC_DYNAMIC_MINOR,
 	.name	= DEVICE_NAME,
 	.fops	= &my_fops,
-	.mode	= 0777
+	.mode	= 0777,
 };
 
 
