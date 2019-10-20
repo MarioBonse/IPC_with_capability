@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "ioctl.h"
 
-#define DEVICE_NAME "dev/capability_module"  /* "capability_module" è il nome che viene assegnato al misc device quando viene registrato */
+#define DEVICE_NAME "/dev/capability_module"  /* "capability_module" è il nome che viene assegnato al misc device quando viene registrato */
 
 
 /* Functions for the ioctl calls */
@@ -45,6 +45,7 @@ int main()
   if (file_desc < 0) {
     printf ("Can't open device file: %s\n", 
             DEVICE_NAME);
+	printf(file_desc, "\n");
     exit(-1);
   }
 
