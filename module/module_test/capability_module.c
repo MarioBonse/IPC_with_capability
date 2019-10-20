@@ -31,9 +31,15 @@ static int my_close(struct inode *inode, struct file *filp) {
  return 0;
 }
 
-int my_ioctl(struct inode *inode, struct file *filp, unsigned int ioctl_num, unsigned long ioctl_param)
+static long unlocked_ioctl(
+                    struct file *filp, 
+                    unsigned int cmd, 
+                    unsigned long argp)
 {
-	switch(ioctl_num)
+  void __user *arg_user;
+  arg_user = (void __user *)argp;
+  pr_info("cmd = %x\n", cmd);
+	switch(cmd)
 	{
 		case NEW_CAPABILITY:
 		printk("new_capability sku sku\n");
@@ -51,16 +57,10 @@ int my_ioctl(struct inode *inode, struct file *filp, unsigned int ioctl_num, uns
 }
 
 static struct file_operations my_fops = {
-  owner: THIS_MODULE,
-  open : my_open,
-  ioctl:	my_ioctl,
-  release: my_close,
-#if 0
-  .read =         my_read,
-  .write =        my_write,
-  .poll =         my_poll,
-  .fasync =       my_fasync,
-#endif
+  .owner          = THIS_MODULE,
+  .unlocked_ioctl = unlocked_ioctl,
+  .open           = my_open,
+  .release        = my_close,
 };
 
 
