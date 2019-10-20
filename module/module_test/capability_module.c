@@ -65,7 +65,10 @@ static struct file_operations my_fops = {
 
 
 static struct miscdevice test_device = {
-  MISC_DYNAMIC_MINOR, DEVICE_NAME, &my_fops
+	.minor	= MISC_DYNAMIC_MINOR,
+	.name	= DEVICE_NAME,
+	.fops	= &my_fops,
+	.mode	= 0777
 };
 
 
