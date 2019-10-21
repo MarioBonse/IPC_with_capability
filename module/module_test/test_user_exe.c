@@ -3,9 +3,10 @@
 #include <sys/ioctl.h>  /* ioctl */
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "ioctl.h"
 
-#define DEVICE_NAME "dev/capability_module"  /* "capability_module" è il nome che viene assegnato al misc device quando viene registrato */
+#define DEVICE_NAME "/dev/capability_module"  /* "capability_module" è il nome che viene assegnato al misc device quando viene registrato */
 
 
 /* Functions for the ioctl calls */
@@ -38,13 +39,16 @@ int ioctl_send_capability(int file_desc, int capability, char*buff)
 /* Main - Call the ioctl functions */
 int main()
 {
+	printf("sono dentro main()\n"); // da togliere, solo per il debugging
   int file_desc;
-
-  file_desc = open(DEVICE_NAME, O_RDONLY);
+	
+	printf("Trying to open device file: %s\n", DEVICE_NAME);
+  	file_desc = open(DEVICE_NAME, O_RDWR);
 
   if (file_desc < 0) {
-    printf ("Can't open device file: %s\n", 
+    printf ("can't open device file: %s\n", 
             DEVICE_NAME);
+	printf(file_desc, "\n");
     exit(-1);
   }
 
