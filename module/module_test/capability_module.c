@@ -1,3 +1,5 @@
+#include <linux/poll.h>
+#include <linux/sched.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <linux/init.h>
@@ -5,7 +7,7 @@
 #include <linux/mutex.h>
 #include <linux/slab.h>
 #include <linux/fs.h>
-//#include <linux/ioctl.h> 	it gets included by the header "ioctl.h"
+#include <linux/ioctl.h> 
 #include <linux/printk.h>
 #include <linux/random.h>
 #include <linux/list.h>
@@ -87,8 +89,8 @@ static void testmodule_exit(void)
   misc_deregister(&test_device);
 }
 
-
-
+module_init(testmodule_init);
+module_exit(testmodule_exit);
 
 /*
 !!!
@@ -216,7 +218,3 @@ Managing capability: function that write, read, create, delete a capability
 // }
 
 
-
-
-module_init(testmodule_init);
-module_exit(testmodule_exit);

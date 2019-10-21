@@ -32,7 +32,7 @@ main()
     exit(-1);
   }
 
-  ioctl_new_capability(file_desc)
+  ioctl_new_capability(file_desc);
 
   close(file_desc); 
 }

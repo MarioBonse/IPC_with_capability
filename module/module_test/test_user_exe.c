@@ -39,21 +39,19 @@ int ioctl_send_capability(int file_desc, int capability, char*buff)
 /* Main - Call the ioctl functions */
 int main()
 {
-	printf("sono dentro main()\n"); // da togliere, solo per il debugging
   int file_desc;
-	
-	printf("Trying to open device file: %s\n", DEVICE_NAME);
-  	file_desc = open(DEVICE_NAME, O_RDWR);
+  printf("\nScript loaded, now we will try to open the device\n");
+  file_desc = open(DEVICE_NAME, O_RDWR);
 
-  if (file_desc < 0) {
-    printf ("can't open device file: %s\n", 
-            DEVICE_NAME);
-	printf(file_desc, "\n");
-    exit(-1);
-  }
-
-  ioctl(file_desc, NEW_CAPABILITY, NULL);
-
+  // if (file_desc == -1) {
+  //   perror("OPEN");
+  //   printf ("Can't open device file: %s\n", 
+  //           DEVICE_NAME);
+  //   exit(-1);
+  // }
+  printf("\nNow I call ioctl\n");
+  ioctl(file_desc, NEW_CAPABILITY);
+  printf("ioctl executed\n");
   close(file_desc); 
 }
 
