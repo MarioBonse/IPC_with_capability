@@ -33,7 +33,7 @@ static int my_close(struct inode *inode, struct file *filp) {
  return 0;
 }
 
-static long unlocked_ioctl(
+static long my_ioctl(
                     struct file *filp, 
                     unsigned int cmd, 
                     unsigned long argp)
@@ -44,23 +44,27 @@ static long unlocked_ioctl(
 	switch(cmd)
 	{
 		case NEW_CAPABILITY:
-		printk("new_capability sku sku\n");
+		printk("Executing new_capability\n");
+		break;
 		
 		case WRITE_CAPABILITY:
-		printk("write_capability \n");
+		printk("Executing write_capability\n");
+		break;
 
 		case READ_CAPABILITY:
-		printk("read_capability \n");
+		printk("Executing read_capability\n");
+		break;
 
 		case DEL_CAPABILITY:
-		printk("delete_capability \n");
+		printk("Executing delete_capability\n");
+		break;
 	}
 	return 0;
 }
 
 static struct file_operations my_fops = {
   .owner          = THIS_MODULE,
-  .unlocked_ioctl = unlocked_ioctl,
+  .unlocked_ioctl = my_ioctl,
   .open           = my_open,
   .release        = my_close,
 };
@@ -70,7 +74,7 @@ static struct miscdevice test_device = {
 	.minor	= MISC_DYNAMIC_MINOR,
 	.name	= DEVICE_NAME,
 	.fops	= &my_fops,
-	.mode	= 0777,
+	.mode	= 0777,	// this should the permissions
 };
 
 

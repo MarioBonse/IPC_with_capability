@@ -42,15 +42,16 @@ int main()
   int file_desc;
   printf("\nScript loaded, now we will try to open the device\n");
   file_desc = open(DEVICE_NAME, O_RDWR);
+  if (file_desc == -1) {
+     perror("OPEN");
+     printf ("Can't open device file : %s\n", 
+             DEVICE_NAME);
+     exit(-1);
+  }
 
-  // if (file_desc == -1) {
-  //   perror("OPEN");
-  //   printf ("Can't open device file: %s\n", 
-  //           DEVICE_NAME);
-  //   exit(-1);
-  // }
   printf("\nNow I call ioctl\n");
   ioctl(file_desc, NEW_CAPABILITY);
+
   printf("ioctl executed\n");
   close(file_desc); 
 }

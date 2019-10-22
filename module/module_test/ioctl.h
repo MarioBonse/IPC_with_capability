@@ -3,9 +3,8 @@
 
 #include <linux/ioctl.h>
 
-#define MY_IOC_MAGIC_NUMBER 10 // va assegnato così brute force? è il major_number e quindi è 10 perchè è un misc_device? PLISHELP
-
-struct ioctl_message    {
+#define MY_IOC_MAGIC_NUMBER 10 
+struct ioctl_message{
     int capability;
     char *buff;
 };
