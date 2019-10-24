@@ -14,12 +14,11 @@
 int ioctl_new_capability(int file_desc)
 {
   int capability;
-  capability = ioctl(file_desc, NEW_CAPABILITY, NULL);
-
+  capability = ioctl(file_desc, NEW_CAPABILITY);
   if (capability < 0) {
     printf ("ioctl_set_msg failed:%d\n", capability);
-    exit(-1);
   }
+  return capability;
 }
 
 int ioctl_send_capability(int file_desc, int capability, char*buff)
@@ -52,6 +51,7 @@ int main()
   printf("\nNow I call ioctl\n");
   ioctl(file_desc, NEW_CAPABILITY);
 
+  ioctl_new_capability(file_desc);
   printf("ioctl executed\n");
   close(file_desc); 
 }

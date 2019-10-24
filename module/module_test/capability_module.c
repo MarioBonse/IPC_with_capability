@@ -22,6 +22,33 @@ MODULE_LICENSE("GPL");
 
 static struct list_head head;
 
+// !!!
+// Managing capability: function that write, read, create, delete a capability
+// !!!
+
+struct capability_elem{
+    int capability_ID;
+    char *message;
+    struct mutex my_mutex;
+    size_t len;
+    struct list_head kl;
+};
+/* function that create a new capability.
+It creates an element capability_elem, init it and add it in the queue */
+int new_capability(void)
+{
+    struct capability_elem  *new_elem;
+    new_elem = kmalloc(sizeof(struct capability_elem), GFP_KERNEL);
+    new_elem->capability_ID = get_random_int();
+    new_elem->len = 0;
+    // init the mutex
+    mutex_init(&(new_elem->my_mutex));
+    // ad to the list of capability
+    list_add(&(new_elem->kl), &head);
+	return new_elem->capability_ID;
+}
+
+
 static int my_open(struct inode *inode, struct file *filp)
 {
  printk(KERN_INFO "Inside open \n");
@@ -45,6 +72,7 @@ static long my_ioctl(
 	{
 		case NEW_CAPABILITY:
 		printk("Executing new_capability\n");
+		return new_capability();
 		break;
 		
 		case WRITE_CAPABILITY:
@@ -78,17 +106,19 @@ static struct miscdevice test_device = {
 };
 
 
-static int testmodule_init(void)
+static int __init testmodule_init(void)
 {
   int res;
   res = misc_register(&test_device);
 
   printk("Misc Register returned %d\n", res);
+  INIT_LIST_HEAD(&head);
+
 
   return 0;
 }
 
-static void testmodule_exit(void)
+static void __exit testmodule_exit(void)
 {
   misc_deregister(&test_device);
 }
@@ -96,52 +126,28 @@ static void testmodule_exit(void)
 module_init(testmodule_init);
 module_exit(testmodule_exit);
 
-/*
-!!!
-Managing capability: function that write, read, create, delete a capability
-!!!
-*/
-// struct capability_elem{
-//     int capability_ID;
-//     char *message;
-//     struct mutex my_mutex;
-//     size_t len;
-//     struct list_head kl;
-// };
-// /* function that create a new capability.
-// It creates an element capability_elem, init it and add it in the queue */
-// int new_capability(void)
-// {
-//     struct capability_elem  *new_elem;
-//     new_elem = kmalloc(sizeof(struct capability_elem), GFP_KERNEL);
-//     new_elem->capability_ID = get_random_int();
-//     new_elem->len = 0;
-//     // init the mutex
-//     mutex_init(&(new_elem->my_mutex));
-//     // ad to the list of capability
-//     list_add(&(new_elem->kl), &head);
-// }
 
-// /*
+
+
 // Function that check if, given a capability ID it exists.
 // It search in the list of capbaility if exists return the corrispondent element in the list
-//  */
-// struct capability_elem *check_capability(int capability_ID)
-// {
-//     struct list_head *l, *tmp;
-//     struct capability_elem *n;
-//     printk("Searching capability:\n");
+ 
+struct capability_elem *check_capability(int capability_ID)
+{
+    struct list_head *l, *tmp;
+    struct capability_elem *n;
+    printk("Searching capability:\n");
 
-//     list_for_each_safe(l, tmp, &head) {
-//         n = list_entry(l, struct node, kl);
-//         if (n->capability_ID == capability_ID){
-//             printk("this capability exists!\n");
-//             return n;
-//         }
-//     }
-//     printk("this capability does not exists!\n");
-//     return NULL
-// }
+    list_for_each_safe(l, tmp, &head) {
+        n = list_entry(l, struct capability_elem, kl);
+        if (n->capability_ID == capability_ID){
+            printk("this capability exists!\n");
+            return n;
+        }
+    }
+    printk("this capability does not exists!\n");
+    return NULL;
+}
 
 // ssize_t read_capability(int capability_ID, char __user *buf, size_t len)
 // {
