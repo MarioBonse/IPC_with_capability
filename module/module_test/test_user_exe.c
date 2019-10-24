@@ -56,7 +56,7 @@ int ioctl_write_capability(int file_desc, int capability, char*buff, int len)
 /* Main - Call the ioctl functions */
 int main()
 {
-  char *message;
+  char message[5];
   int len = 2;
   int capability;
   char text[]="ciao";
