@@ -69,13 +69,54 @@ struct capability_elem *check_capability(int capability_ID)
     return NULL;
 }
 
+
+size_t write_capability(int capability_ID, char __user *buf, size_t len)
+{
+    struct capability_elem *my_capability;
+    my_capability = check_capability(capability_ID);
+    if (my_capability == NULL)
+    {
+        printk("ERROR: this capability does not exists");
+        return 0;
+    }else{
+         // we can write into the capability
+            int err;
+            size_t count;
+            count = len;
+
+            mutex_lock(&my_capability->my_mutex);
+            if (my_capability->message) {
+              // there is somenthing writtne on the capability. 
+              // now it's not blocking
+              printk("Error someone has already written");
+              count = -1;
+              goto exit;
+            }
+            my_capability->message = kmalloc(count, GFP_USER);
+            if (my_capability->message == NULL) {
+              printk("Error during memory allocation");
+              count = -1;
+              goto exit;
+            }
+
+            err = copy_from_user(my_capability->message, buf, count);
+            if (err) {
+              printk("Error during copy");
+              count = -EFAULT;
+              goto exit;
+            }
+            exit:
+            mutex_unlock(&my_capability->my_mutex);
+
+            return count;
+            }
+}
+
+
 ssize_t read_capability(int capability_ID, char __user *buf, size_t len)
 {
-    // int res, err;
+    int res, err;
     struct capability_elem *my_capability;
-	if (len == 2){
-		printk("check that argouments are passed fine");
-	}
     my_capability = check_capability(capability_ID);
     if (my_capability == NULL)
     {
@@ -84,27 +125,28 @@ ssize_t read_capability(int capability_ID, char __user *buf, size_t len)
     }else{
 		printk("The capability exists, now we could write");
 		return 1;
-    //     // we can read from the capability
-    //     mutex_lock(&my_capability->my_mutex);
-    //     if (len > my_capability->len) {
-    //       res = my_capability->len;
-    //     } else {
-    //       res = len;
-    //     }
-    //     if (my_capability->message == NULL) {
-    //     mutex_unlock(&my_capability->my_mutex);
-    //     return 0;
-    //     }
-    //   err = copy_to_user(buf, my_capability->message, res);
-    //   if (err) {
-    //   return -EFAULT;
-    //   }
+        // we can read from the capability
+        mutex_lock(&my_capability->my_mutex);
+        if (len > my_capability->len) {
+          res = my_capability->len;
+        } else {
+          res = len;
+        }
+        if (my_capability->message == NULL) {
+			res = 0;
+			goto exit_read;
+        }
+		err = copy_to_user(buf, my_capability->message, res);
+		if (err) {
+			res = -EFAULT;
+			goto exit_read;
+		}
+		kfree(my_capability->message);
+		my_capability->message = NULL;
+		exit_read:
+		mutex_unlock(&my_capability->my_mutex);
 
-    //   kfree(my_capability->message);
-    //   my_capability->message = NULL;
-    //   mutex_unlock(&my_capability->my_mutex);
-
-    //   return res;
+		return res;
 	}
 }
 
@@ -138,6 +180,7 @@ static long my_ioctl(
 		
 		case WRITE_CAPABILITY:
 		printk("Executing write_capability\n");
+		return write_capability(message->capability, message->buff, message->len);
 		break;
 
 		case READ_CAPABILITY:

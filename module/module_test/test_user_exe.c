@@ -59,6 +59,7 @@ int main()
   char *message;
   int len = 2;
   int capability;
+  char text[]="ciao";
   int file_desc;
   printf("\nScript loaded, now we will try to open the device\n");
   file_desc = open(DEVICE_NAME, O_RDWR);
@@ -68,12 +69,10 @@ int main()
              DEVICE_NAME);
      exit(-1);
   }
-
-  printf("\nNow I call ioctl\n");
-  ioctl(file_desc, NEW_CAPABILITY, NULL);
-
   capability = ioctl_new_capability(file_desc);
-  len = ioctl_read_capability(file_desc, capability, message, 2);
+  len = ioctl_write_capability(file_desc, capability, text, sizeof(text));
+  len = ioctl_read_capability(file_desc, capability, message, sizeof(text));
+  printf("%s", message); 
   printf("ioctl executed\n");
   close(file_desc); 
 }
