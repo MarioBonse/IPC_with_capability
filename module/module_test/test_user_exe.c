@@ -14,30 +14,51 @@
 int ioctl_new_capability(int file_desc)
 {
   int capability;
-  capability = ioctl(file_desc, NEW_CAPABILITY);
+  capability = ioctl(file_desc, NEW_CAPABILITY, NULL);
   if (capability < 0) {
     printf ("ioctl_set_msg failed:%d\n", capability);
   }
   return capability;
 }
 
-int ioctl_send_capability(int file_desc, int capability, char*buff)
+int ioctl_read_capability(int file_desc, int capability, char*buff, int len)
 {
-  int len;
-  struct ioctl_message messagge;
-  messagge.capability = capability;
-  messagge.buff = buff;
-  len = ioctl(file_desc, WRITE_CAPABILITY, messagge);
+  int ret;
+  struct ioctl_message *messagge = malloc(sizeof(struct ioctl_message));
+  messagge->capability = capability;
+  messagge->buff = buff;
+  messagge->len = len;
+  ret = ioctl(file_desc, READ_CAPABILITY, messagge);
   // copy messagge.buff in messagge
-  if (capability < 0) {
-    printf ("ioctl_set_msg failed:%d\n", len);
+  if (ret < 0) {
+    printf ("ioctl_read_msg failed:%d\n", ret);
     exit(-1);
   }
+  return ret;
+}
+
+int ioctl_write_capability(int file_desc, int capability, char*buff, int len)
+{
+  int ret;
+  struct ioctl_message *messagge = malloc(sizeof(struct ioctl_message));
+  messagge->capability = capability;
+  messagge->buff = buff;
+  messagge->len = len;
+  ret = ioctl(file_desc, WRITE_CAPABILITY, messagge);
+  // copy messagge.buff in messagge
+  if (ret < 0) {
+    printf ("ioctl_read_msg failed:%d\n", ret);
+    exit(-1);
+  }
+  return ret;
 }
 
 /* Main - Call the ioctl functions */
 int main()
 {
+  char *message;
+  int len = 2;
+  int capability;
   int file_desc;
   printf("\nScript loaded, now we will try to open the device\n");
   file_desc = open(DEVICE_NAME, O_RDWR);
@@ -49,9 +70,10 @@ int main()
   }
 
   printf("\nNow I call ioctl\n");
-  ioctl(file_desc, NEW_CAPABILITY);
+  ioctl(file_desc, NEW_CAPABILITY, NULL);
 
-  ioctl_new_capability(file_desc);
+  capability = ioctl_new_capability(file_desc);
+  len = ioctl_read_capability(file_desc, capability, message, 2);
   printf("ioctl executed\n");
   close(file_desc); 
 }

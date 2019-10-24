@@ -7,6 +7,7 @@
 struct ioctl_message{
     int capability;
     char *buff;
+    int len;
 };
 
 #define NEW_CAPABILITY        	_IO(MY_IOC_MAGIC_NUMBER, 0)
