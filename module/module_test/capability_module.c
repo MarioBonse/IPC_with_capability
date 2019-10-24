@@ -74,7 +74,7 @@ static struct miscdevice test_device = {
 	.minor	= MISC_DYNAMIC_MINOR,
 	.name	= DEVICE_NAME,
 	.fops	= &my_fops,
-	.mode	= 0777,	// this should the permissions
+	.mode	= 0777,	// this should set the permissions
 };
 
 
