@@ -41,6 +41,7 @@ int new_capability(void)
     new_elem = kmalloc(sizeof(struct capability_elem), GFP_KERNEL);
     new_elem->capability_ID = get_random_int();
     new_elem->len = 0;
+	new_elem->message = NULL;
     // init the mutex
     mutex_init(&(new_elem->my_mutex));
     // ad to the list of capability
@@ -124,7 +125,6 @@ ssize_t read_capability(int capability_ID, char __user *buf, size_t len)
         return 0;
     }else{
 		printk("The capability exists, now we could write");
-		return 1;
         // we can read from the capability
         mutex_lock(&my_capability->my_mutex);
         if (len > my_capability->len) {
@@ -150,6 +150,23 @@ ssize_t read_capability(int capability_ID, char __user *buf, size_t len)
 	}
 }
 
+int del_capability(int capability_ID){
+	    struct list_head *l, *tmp;
+    struct capability_elem *n;
+    printk("Searching capability:\n");
+
+    list_for_each_safe(l, tmp, &head) {
+        n = list_entry(l, struct capability_elem, kl);
+        if (n->capability_ID == capability_ID){
+            printk("I can delete this capability\n");
+            list_del(l);
+        	kfree(n);
+			return 1;
+        }
+    }
+    printk("this capability does not exists!\n");
+    return 0;
+}
 
 static int my_open(struct inode *inode, struct file *filp)
 {
@@ -191,6 +208,7 @@ static long my_ioctl(
 
 		case DEL_CAPABILITY:
 		printk("Executing delete_capability\n");
+		return del_capability(message->capability);
 		break;
 	}
 	return 0;

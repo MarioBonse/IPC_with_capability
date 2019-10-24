@@ -53,11 +53,27 @@ int ioctl_write_capability(int file_desc, int capability, char*buff, int len)
   return ret;
 }
 
+int ioctl_del_capability(int file_desc, int capability)
+{
+  int ret;
+  struct ioctl_message *messagge = malloc(sizeof(struct ioctl_message));
+  messagge->capability = capability;
+  messagge->buff = NULL;
+  messagge->len = 0;
+  ret = ioctl(file_desc, DEL_CAPABILITY, messagge);
+  // copy messagge.buff in messagge
+  if (ret == 0) {
+    printf ("ioctl_delete failed:%d\n", ret);
+    exit(-1);
+  }
+  return ret;
+}
+
 /* Main - Call the ioctl functions */
 int main()
 {
-  char message[5];
-  int len = 2;
+  char *message = malloc(5*sizeof(char));
+  int len;
   int capability;
   char text[]="ciao";
   int file_desc;
@@ -70,10 +86,14 @@ int main()
      exit(-1);
   }
   capability = ioctl_new_capability(file_desc);
-  len = ioctl_write_capability(file_desc, capability, text, sizeof(text));
-  len = ioctl_read_capability(file_desc, capability, message, sizeof(text));
-  printf("%s", message); 
-  printf("ioctl executed\n");
+  len = ioctl_write_capability(file_desc, capability, text, 5);
+
+  len = ioctl_read_capability(file_desc, capability, message, 5);
+  printf("Original text is: %s\n", text); 
+  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+  printf("Recived text is: %s", message); 
+  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+  printf("TEST ENDED\n");
   close(file_desc); 
 }
 
