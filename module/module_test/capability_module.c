@@ -84,7 +84,8 @@ size_t write_capability(int capability_ID, char __user *buf, size_t len)
             int err;
             size_t count;
             count = len;
-
+            printk("The capability exists, now we can WRITE");
+            printk("writing %ld bytes.", len);
             mutex_lock(&my_capability->my_mutex);
             if (my_capability->message) {
               // there is somenthing writtne on the capability. 
@@ -101,11 +102,13 @@ size_t write_capability(int capability_ID, char __user *buf, size_t len)
             }
 
             err = copy_from_user(my_capability->message, buf, count);
+            printk("COPIED %s", my_capability->message);
             if (err) {
               printk("Error during copy");
               count = -EFAULT;
               goto exit;
             }
+            my_capability->len = count;
             exit:
             mutex_unlock(&my_capability->my_mutex);
 
@@ -124,7 +127,8 @@ ssize_t read_capability(int capability_ID, char __user *buf, size_t len)
         printk("ERROR: this capability does not exists");
         return 0;
     }else{
-		printk("The capability exists, now we could write");
+		    printk("The capability exists, now we can READ");
+        printk("Reading %ld bytes.", len);
         // we can read from the capability
         mutex_lock(&my_capability->my_mutex);
         if (len > my_capability->len) {

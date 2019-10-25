@@ -88,12 +88,23 @@ int main()
   capability = ioctl_new_capability(file_desc);
   len = ioctl_write_capability(file_desc, capability, text, 5);
 
+  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+  printf("We wrote %d character\n", len);
+  printf("Original text is: %s\n", text);
+  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
   len = ioctl_read_capability(file_desc, capability, message, 5);
-  printf("Original text is: %s\n", text); 
+
   printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-  printf("Recived text is: %s", message); 
+  printf("recived %d byte\n", len);
+  printf("Recived text is: %s\n", message); 
   printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-  printf("TEST ENDED\n");
+  printf("Now I del the capability");
+
+  ioctl_del_capability(file_desc, capability);
+  printf("Now I can't write anymore the capability\n");
+  len = ioctl_write_capability(file_desc, capability, text, 5);
+
   close(file_desc); 
 }
 
