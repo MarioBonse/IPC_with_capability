@@ -75,7 +75,8 @@ int main()
   char *message = malloc(5*sizeof(char));
   int len;
   int capability;
-  char text[]="ciao";
+  char text[]="Message_example";
+  int message_len = sizeof(text);
   int file_desc;
   printf("\nScript loaded, now we will try to open the device\n");
   file_desc = open(DEVICE_NAME, O_RDWR);
@@ -86,14 +87,14 @@ int main()
      exit(-1);
   }
   capability = ioctl_new_capability(file_desc);
-  len = ioctl_write_capability(file_desc, capability, text, 5);
+  len = ioctl_write_capability(file_desc, capability, text, message_len);
 
   printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
   printf("We wrote %d character\n", len);
   printf("Original text is: %s\n", text);
   printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 
-  len = ioctl_read_capability(file_desc, capability, message, 5);
+  len = ioctl_read_capability(file_desc, capability, message, message_len);
 
   printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
   printf("recived %d byte\n", len);

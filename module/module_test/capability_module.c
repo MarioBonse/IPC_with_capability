@@ -14,6 +14,7 @@
 
 #include "ioctl.h"
 
+//#define DEBUG false
 #define DEVICE_NAME "capability_module" //name that will be assigned to misc_device when registering it
 
 MODULE_AUTHOR("Mario Bonsembiante");
@@ -45,8 +46,10 @@ int new_capability(void)
     // init the mutex
     mutex_init(&(new_elem->my_mutex));
     // ad to the list of capability
+  #ifdef DEBUG
 	printk("NEW CAPABILITY CREATED");
-    list_add(&(new_elem->kl), &head);
+  #endif
+  list_add(&(new_elem->kl), &head);
 	return new_elem->capability_ID;
 }
 
@@ -57,16 +60,22 @@ struct capability_elem *check_capability(int capability_ID)
 {
     struct list_head *l, *tmp;
     struct capability_elem *n;
+    #ifdef DEBUG
     printk("Searching capability:\n");
+    #endif
 
     list_for_each_safe(l, tmp, &head) {
         n = list_entry(l, struct capability_elem, kl);
         if (n->capability_ID == capability_ID){
+            #ifdef DEBUG
             printk("this capability exists!\n");
+            #endif
             return n;
         }
     }
+    #ifdef DEBUG
     printk("this capability does not exists!\n");
+    #endif
     return NULL;
 }
 
@@ -77,34 +86,47 @@ size_t write_capability(int capability_ID, char __user *buf, size_t len)
     my_capability = check_capability(capability_ID);
     if (my_capability == NULL)
     {
+        #ifdef DEBUG
         printk("ERROR: this capability does not exists");
+        #endif
         return 0;
     }else{
          // we can write into the capability
             int err;
             size_t count;
             count = len;
+            #ifdef DEBUG
             printk("The capability exists, now we can WRITE");
             printk("writing %ld bytes.", len);
+            #endif
+
             mutex_lock(&my_capability->my_mutex);
             if (my_capability->message) {
               // there is somenthing writtne on the capability. 
               // now it's not blocking
+              #ifdef DEBUG
               printk("Error someone has already written");
+              #endif
               count = -1;
               goto exit;
             }
             my_capability->message = kmalloc(count, GFP_USER);
             if (my_capability->message == NULL) {
+              #ifdef DEBUG
               printk("Error during memory allocation");
+              #endif
               count = -1;
               goto exit;
             }
 
             err = copy_from_user(my_capability->message, buf, count);
+            #ifdef DEBUG
             printk("COPIED %s", my_capability->message);
+            #endif
             if (err) {
+              #ifdef DEBUG
               printk("Error during copy");
+              #endif
               count = -EFAULT;
               goto exit;
             }
@@ -124,11 +146,16 @@ ssize_t read_capability(int capability_ID, char __user *buf, size_t len)
     my_capability = check_capability(capability_ID);
     if (my_capability == NULL)
     {
+        #ifdef DEBUG
         printk("ERROR: this capability does not exists");
+        #endif
         return 0;
     }else{
+        #ifdef DEBUG
 		    printk("The capability exists, now we can READ");
-        printk("Reading %ld bytes.", len);
+        printk("Reading %ld bytes.", len);        
+        #endif
+
         // we can read from the capability
         mutex_lock(&my_capability->my_mutex);
         if (len > my_capability->len) {
@@ -157,30 +184,41 @@ ssize_t read_capability(int capability_ID, char __user *buf, size_t len)
 int del_capability(int capability_ID){
 	    struct list_head *l, *tmp;
     struct capability_elem *n;
+    #ifdef DEBUG
     printk("Searching capability:\n");
+    #endif
 
     list_for_each_safe(l, tmp, &head) {
         n = list_entry(l, struct capability_elem, kl);
         if (n->capability_ID == capability_ID){
+            #ifdef DEBUG
             printk("I can delete this capability\n");
+            #endif
             list_del(l);
         	kfree(n);
 			return 1;
         }
     }
+    #ifdef DEBUG
     printk("this capability does not exists!\n");
+    #endif
+            
     return 0;
 }
 
 static int my_open(struct inode *inode, struct file *filp)
 {
- printk(KERN_INFO "Inside open \n");
- return 0;
+  #ifdef DEBUG
+  printk(KERN_INFO "Inside open \n");
+  #endif
+  return 0;
 }
 
 static int my_close(struct inode *inode, struct file *filp) {
- printk (KERN_INFO "Inside close \n");
- return 0;
+  #ifdef DEBUG
+  printk (KERN_INFO "Inside close \n");
+  #endif
+  return 0;
 }
 
 static long my_ioctl(
@@ -191,27 +229,24 @@ static long my_ioctl(
 	void __user *arg_user = (void __user *)argp;
 	// arg_user = (void __user *)argp;
 	struct ioctl_message *message = arg_user;
+  #ifdef DEBUG
   pr_info("cmd = %x\n", cmd);
+  #endif
 	switch(cmd)
 	{
 		case NEW_CAPABILITY:
-		printk("Executing new_capability\n");
 		return new_capability();
 		break;
 		
 		case WRITE_CAPABILITY:
-		printk("Executing write_capability\n");
 		return write_capability(message->capability, message->buff, message->len);
 		break;
 
 		case READ_CAPABILITY:
-		printk("Executing read_capability\n");
 		return read_capability(message->capability, message->buff, message->len);
-
-		break;
+    break;
 
 		case DEL_CAPABILITY:
-		printk("Executing delete_capability\n");
 		return del_capability(message->capability);
 		break;
 	}
@@ -238,7 +273,9 @@ static int __init testmodule_init(void)
 {
   int res;
   res = misc_register(&test_device);
-  printk(test_device.name);
+  #ifdef DEBUG
+  printk("DEBUG MODE\n\n");
+  #endif
   printk("Misc Register returned %d\n", res);
   INIT_LIST_HEAD(&head);
 
