@@ -73,12 +73,13 @@ int ioctl_del_capability(int file_desc, int capability)
 /* Main - Call the ioctl functions */
 int main()
 {
-  char *message = malloc(5*sizeof(char));
   int len;
   int capability;
   char text[]="Message_example";
   int message_len = sizeof(text);
   int file_desc;
+  char *message = malloc(sizeof(text)*sizeof(char));
+  char *message_2 = malloc(sizeof(text)*sizeof(char));
 
   printf("\nScript loaded, now we will try to open the device\n");
   file_desc = open(DEVICE_NAME, O_RDWR);
@@ -112,11 +113,11 @@ int main()
   printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 
 	printf("\nNow we will try to read again from the same capability\n");
-	len = ioctl_read_capability(file_desc, capability, message, message_len);
+	len = ioctl_read_capability(file_desc, capability, message_2, message_len);
 
 	printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
   printf("Received %d byte\n", len);
-  printf("Received text is: %s\n", message); 
+  printf("Received text is: %s\n", message_2); 
   printf("!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 
 

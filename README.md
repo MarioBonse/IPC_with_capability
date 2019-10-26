@@ -6,10 +6,10 @@ Every capability represent a different communication channel, with a unique key.
 
 A process will be able to read and write a message in a capability channel if and only if it has the token (and so the right) associate with the communication channel. We decide to implement an API which let the user to _create_, _read_, _write_ and _delete_ a capability. 
 
-    1. _key_ = _create()_ function for creating a capability. It will return a value for the capability which has to be used in order to \textit{read/write} in the channel
-    2. _write(message,key)_   Function for writing a message given a key
-    3. _message_ = _read(key)_ Function for reading a message given a key
-    4. _delete(key)_ Function for deleting a capability channel
+    1. *key* = *create()* function for creating a capability. It will return a value for the capability which has to be used in order to \textit{read/write} in the channel
+    2. *write(message,key)*   Function for writing a message given a key
+    3. *message* = *read(key)* Function for reading a message given a key
+    4. *delete(key)* Function for deleting a capability channel
 
 We decided to implement asynchronous communication, so a process will not be block if there isn't something to read or there already a message in a capability channel. Implementing different policy is very easy.
 
