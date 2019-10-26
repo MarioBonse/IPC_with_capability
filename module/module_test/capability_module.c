@@ -72,6 +72,9 @@ int new_capability(void)
   // we have to check if the id was assigned to another capability before
   do{
     new_elem->capability_ID = get_random_int();
+		#ifdef DEBUG
+		printk("Capability ID: %d", new_elem->capability_ID);
+		#endif
     test = check_capability(new_elem->capability_ID);
   }while( test != NULL);
   
@@ -182,6 +185,7 @@ ssize_t read_capability(int capability_ID, char __user *buf, size_t len)
 			res = -EFAULT;
 			goto exit_read;
 		}
+		my_capability->len = 0;
 		kfree(my_capability->message);
 		my_capability->message = NULL;
 		exit_read:
