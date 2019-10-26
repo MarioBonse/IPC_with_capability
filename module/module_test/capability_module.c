@@ -34,28 +34,9 @@ struct capability_elem{
     size_t len;
     struct list_head kl;
 };
-/* function that create a new capability.
-It creates an element capability_elem, init it and add it in the queue */
-int new_capability(void)
-{
-    struct capability_elem  *new_elem;
-    new_elem = kmalloc(sizeof(struct capability_elem), GFP_KERNEL);
-    new_elem->capability_ID = get_random_int();
-    new_elem->len = 0;
-	new_elem->message = NULL;
-    // init the mutex
-    mutex_init(&(new_elem->my_mutex));
-    // ad to the list of capability
-  #ifdef DEBUG
-	printk("NEW CAPABILITY CREATED");
-  #endif
-  list_add(&(new_elem->kl), &head);
-	return new_elem->capability_ID;
-}
 
 // Function that check if, given a capability ID it exists.
 // It search in the list of capbaility if exists return the corrispondent element in the list
- 
 struct capability_elem *check_capability(int capability_ID)
 {
     struct list_head *l, *tmp;
@@ -78,6 +59,35 @@ struct capability_elem *check_capability(int capability_ID)
     #endif
     return NULL;
 }
+
+
+
+
+/* function that create a new capability.
+It creates an element capability_elem, init it and add it in the queue */
+int new_capability(void)
+{
+  struct capability_elem  *new_elem, *test;
+  new_elem = kmalloc(sizeof(struct capability_elem), GFP_KERNEL);
+  // we have to check if the id was assigned to another capability before
+  do{
+    new_elem->capability_ID = get_random_int();
+    test = check_capability(new_elem->capability_ID);
+  }while( test != NULL);
+  
+  new_elem->len = 0;
+  new_elem->message = NULL;
+  // init the mutex
+  mutex_init(&(new_elem->my_mutex));
+  // ad to the list of capability
+  #ifdef DEBUG
+	printk("NEW CAPABILITY CREATED");
+  #endif
+  list_add(&(new_elem->kl), &head);
+	return new_elem->capability_ID;
+}
+
+
 
 
 size_t write_capability(int capability_ID, char __user *buf, size_t len)

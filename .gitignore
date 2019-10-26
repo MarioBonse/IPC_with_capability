@@ -54,3 +54,8 @@ dkms.conf
 # the kernel and the file for building the module
 kernel/*/
 Test/
+
+#the .gz created 
+test.gz
+mog.gz
+test_user_exe
