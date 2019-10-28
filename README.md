@@ -27,7 +27,13 @@ struct capability_elem{
 ```
 
 ## IOCTL
-In order to implemet system call we exploted the IOCTL mechanism.
+In order to manage the different functionality needed for the capability we couldn't rely only on the _write_ and _read_ mechanism associated with a miscellaneous device, so we implemented _ioctl_ functionality into the module.
+
+First, we added the ioctl function to the file operations and implemented the function _my_ioctl()_ to manage the different call through a switch with the different call that are available for the ioctl.
+
+The different cases of the switch where then defined in an header file, ioctl.h, that need to be included in both the code for the kernel module and the user executable.
+
+File permissions were set through the member _mode_ of the struct _misc_device_, to allow reading, writing, & executing for owner, group and other, to be sure that the user application could open the file and do operations on it.
 
 
 ## How to use it
@@ -48,15 +54,15 @@ Then you can test the script with
 ```
 sudo /Test/test_user_exe
 ```
-You can always in generale remove the module
+You can always in general remove the module
 ```
 sudo /sbin/rmmod /Test/capabilty_module.ko
 ```
-and also check the modules insered on the virtual machine with
+and also check that the module has been inserted in the kernel (running on the virtual machine) with
 ```
 sudo /sbin/lsmod
 ```
-and finally shows the kernel'S log with
+and finally show the kernel'S log with
 ```
 sudo /sbin/dmesg
 ```
