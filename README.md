@@ -27,11 +27,45 @@ struct capability_elem{
 ```
 
 ## IOCTL
-In order to manage the different functionality needed for the capability we couldn't rely only on the _write_ and _read_ mechanism associated with a miscellaneous device, so we implemented _ioctl_ functionality into the module.
+In order to manage the different functionality needed for the capability we couldn't rely only on the _write_ and _read_ mechanism associated with a miscellaneous device, so we implemented _ioctl_ functionality into the module. 
+The associated my\_ioctl() function was associated to the correct operation in the _struct file\_operations_
 
-First, we added the ioctl function to the file operations and implemented the function _my_ioctl()_ to manage the different call through a switch with the different call that are available for the ioctl.
+First, we added the ioctl function to the file operations and implemented the function _my_ioctl()_ to manage the different call through a switch with the different call that are available for the ioctl. 
+Example of the basic structure for managing ioctl:
 
-The different cases of the switch where then defined in an header file, ioctl.h, that need to be included in both the code for the kernel module and the user executable.
+```C
+static long my_ioctl(struct file *filp, unsigned int cmd, unsigned long argp)
+{
+	void __user *arg_user = (void __user *)argp;
+
+	struct ioctl_message *message = arg_user;
+
+	switch(cmd)
+	{
+		case NEW_CAPABILITY:
+		new_capability();
+		break;
+        
+        .
+        .
+        .
+	}
+	return 0;
+}
+```
+
+The different cases of the switch where then defined in an header file, ioctl.h, that need to be included in both the code for the kernel module and the user executable. 
+In this same header is defined the _struct ioctl\_message_ used as an input for the various ioctl calls.
+
+
+```C
+#define MY_IOC_MAGIC_NUMBER 10 
+
+#define NEW_CAPABILITY        	_IO(MY_IOC_MAGIC_NUMBER, 0)
+#define WRITE_CAPABILITY        _IOW(MY_IOC_MAGIC_NUMBER, 1, struct ioctl_message*)
+#define READ_CAPABILITY     	_IOR(MY_IOC_MAGIC_NUMBER, 2, struct ioctl_message*)
+#define DEL_CAPABILITY          _IOW(MY_IOC_MAGIC_NUMBER, 3, struct ioctl_message*)
+```
 
 File permissions were set through the member _mode_ of the struct _misc_device_, to allow reading, writing, & executing for owner, group and other, to be sure that the user application could open the file and do operations on it.
 
